@@ -1,9 +1,11 @@
 import React, { useContext, useState } from "react";
 import {
   Image,
+  NativeModules,
   ScrollView,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -86,17 +88,20 @@ const Game = () => {
                 selectionColor={"#000"}
                 placeholder="Tìm kiếm ứng dụng"
               />
-              <Ionicons
-                name={"mic-outline"}
-                size={20}
+              <TouchableOpacity 
+                onPress={() => NativeModules.Open3rdModule.openApp(searchQuery)}
                 style={{
                   position: "absolute",
                   top: "50%",
                   right: 15,
                   zIndex: 10,
                   transform: [{ translateY: -10 }],
-                }}
-              />
+                }}>
+                <Ionicons
+                  name={"mic-outline"}
+                  size={20}
+                />
+              </TouchableOpacity>
             </View>
             <Ionicons
               name={"notifications-outline"}
