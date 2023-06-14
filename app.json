@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "google-play-clone",
+    "name": "Google Play",
     "slug": "google-play-clone",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.giang10a1dz.googleplayclone"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fa6451ee-d164-406d-a7d0-7ea86a24e1a8"
+      }
     }
   }
 }
