@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
   Linking as LinkingRN,
+  NativeModules,
 } from "react-native";
 import { TouchableHighlight } from "react-native-gesture-handler";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -16,7 +17,7 @@ import ComponentSearch from "../Search/ComponentSearch";
 import ProgressCircle from "react-native-progress-circle";
 import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { startActivityAsync } from 'expo-intent-launcher';
+import { startActivityAsync } from "expo-intent-launcher";
 
 const DetailGame = () => {
   const renderItem = (data) => {
@@ -385,7 +386,7 @@ const DetailGame = () => {
                 <TouchableHighlight
                   onPress={async () => {
                     try {
-                      startActivityAsync(gameData?.link_app);
+                      NativeModules.Open3rdModule.openApp(gameData?.link_app);
                     } catch (error) {
                       console.log(error)
                     }
