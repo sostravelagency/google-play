@@ -3,9 +3,9 @@ import { View, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Game from "../screen/Game/Game";
 import Application from "../screen/Application/Application";
-import Book from "../screen/Book/Book";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import Book from "../screen/Book/Book";
 
 const Tab = createBottomTabNavigator();
 
@@ -24,7 +24,7 @@ const TabContainer = () => {
           backgroundColor: "#e5f1f9",
           paddingTop: 10,
           paddingBottom: 10,
-          height: 70
+          height: 70,
         },
       })}
     >
@@ -35,7 +35,7 @@ const TabContainer = () => {
             <Text
               style={{
                 color: focused ? color : "#000",
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: focused ? "bold" : "normal",
               }}
             >
@@ -56,7 +56,7 @@ const TabContainer = () => {
             <Text
               style={{
                 color: focused ? color : "#000",
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: focused ? "bold" : "normal",
               }}
             >
@@ -77,7 +77,7 @@ const TabContainer = () => {
             <Text
               style={{
                 color: focused ? color : "#000",
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: focused ? "bold" : "normal",
               }}
             >

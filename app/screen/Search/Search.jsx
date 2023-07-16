@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   // Image,
   ScrollView,
@@ -8,30 +8,169 @@ import {
   TextInput,
   TouchableHighlight,
   View,
+  Dimensions,
+  Image
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Navigation from "../../component/Search/Navigation";
 import ComponentSearch from "../../component/Search/ComponentSearch";
 import { AppContext } from "../../../App";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+function shuffle(array) {
+  const shuffledArray = [...array];
+  const length = shuffledArray.length;
+
+  for (let i = length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    const temp = shuffledArray[i];
+    shuffledArray[i] = shuffledArray[j];
+    shuffledArray[j] = temp;
+  }
+
+  return shuffledArray;
+}
+function sortByProperty(array, property) {
+  return array.sort((a, b) => {
+    const valueA = parseFloat(a[property].replace(",", "."));
+    const valueB = parseFloat(b[property].replace(",", "."));
+
+    if (valueA < valueB) {
+      return -1;
+    }
+    if (valueA > valueB) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+const addRandomValue = (setArr, arr) => {
+  const randomValue = { ads: true }; // Giá trị ngẫu nhiên mới
+  const randomIndex = Math.floor(Math.random() * (arr.length - 2)) + 1; // Chọn một vị trí ngẫu nhiên từ 1 đến (arr.length - 2)
+  // Tạo hai mảng con từ mảng ban đầu
+  const firstPart = arr.slice(0, randomIndex);
+  const secondPart = arr.slice(randomIndex);
+
+  // Tạo mảng mới bằng cách thêm giá trị mới vào vị trí ngẫu nhiên và hợp nhất hai mảng con lại
+  const newArr = [...firstPart, randomValue, ...secondPart];
+
+  // Cập nhật mảng mới vào state
+  setArr(newArr);
+};
+
+const removeDuplicatesAndKeepRandom = (setArr, arr) => {
+  const uniqueObjects = arr.reduce((uniqueArr, obj) => {
+    const isExist = uniqueArr.some((item) => item.ads === obj.ads);
+
+    if (!isExist) {
+      uniqueArr.push(obj);
+    }
+
+    return uniqueArr;
+  }, []);
+
+  const randomIndex = Math.floor(Math.random() * uniqueObjects.length);
+  const randomObject = uniqueObjects[randomIndex];
+
+  setArr([randomObject]);
+};
 
 const Search = () => {
   const { searchQuery } = useRoute().params;
   const navigation = useNavigation();
   const [searchData, setSearchData] = useState(searchQuery);
-  const [activeInput, setActiveInput]= useState(false)
-  const {data }= useContext(AppContext)
+  const [activeInput, setActiveInput] = useState(false);
+  const { data } = useContext(AppContext);
+  const [adsData, setAdsData]= useState([])
+  const [dataSearch, setDataSearch] = useState(
+    sortByProperty(data, "rating").reverse()
+  );
+  const [filter, setFilter] = useState(0); // 0 is
   const renderItem = (data) => {
-    return data?.map((item, key) => <ComponentSearch key={key} {...item} />);
+    return data?.map((item, key) => {
+      if (item.ads === true) {
+        return (
+          <>
+          <View
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              paddingBottom: 10,
+              flexDirection: "row",
+            }}
+          >
+            <Text style={{ fontSize: 15 }}>Quảng cáo</Text>
+            <Text style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}>
+              •
+            </Text>
+            <Text
+              onPress={() => AsyncStorage.clear()}
+              style={{ fontSize: 20, fontWeight: "600" }}
+            >
+              Được đề xuất cho bạn
+            </Text>
+
+          </View>
+          <View style={{ width: "100%"}}>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                {renderItem2(adsData)}
+              </ScrollView>
+            </View>
+          </>
+        );
+      } else {
+        return <ComponentSearch key={key} {...item} />;
+      }
+    });
   };
+  const renderItem2 = (data) => {
+    return data?.map((item, key) => (
+      <ComponentGame
+        key={key}
+        imgUrl={item.imgUrl}
+        name={item.name}
+        rating={item.rating}
+      />
+    ));
+  };
+
+  useEffect(() => {
+    if (filter == 1) {
+      
+      setDataSearch(shuffle(data));
+    } else {
+      setDataSearch(sortByProperty(data, "rating").reverse());
+    }
+  }, [data, filter]);
+
+  useEffect(() => {
+    addRandomValue(setDataSearch, dataSearch);
+  }, []);
+
+  useEffect(()=> {
+    AsyncStorage.getItem("ads_app")
+    .then(json=> {
+      if(json) {
+        setAdsData(JSON.parse(json))
+      }
+      else {
+        setAdsData([])
+      }
+    })
+  }, [])
+ 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView>
+      <>
         <View
           style={{
             flex: 1,
             backgroundColor: "#fff",
-            paddingLeft: 10,
-            paddingTop: 10,
           }}
         >
           <View
@@ -41,6 +180,8 @@ const Search = () => {
               alignItems: "center",
               flexDirection: "row",
               width: "100%",
+              paddingLeft: 10,
+              paddingTop: 10,
             }}
           >
             <TouchableHighlight
@@ -67,9 +208,8 @@ const Search = () => {
               }}
             >
               <TextInput
-                autoFocus
-                onBlur={()=> setActiveInput(false)}
-                onFocus={()=> setActiveInput(true)}
+                onBlur={() => setActiveInput(false)}
+                onFocus={() => setActiveInput(true)}
                 onChangeText={setSearchData}
                 value={searchData}
                 style={activeInput ? styles.activeInput : styles.nonactiveInput}
@@ -89,48 +229,33 @@ const Search = () => {
               style={{ marginLeft: 12, marginRight: 12 }}
             />
           </View>
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            <Navigation />
-          </ScrollView>
-          <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
-            {renderItem(data.slice(0, 3))}
-          </View>
           <View
             style={{
               width: "100%",
-              display: "flex",
-              alignItems: "center",
-              paddingTop: 10,
-              paddingBottom: 10,
-              flexDirection: "row",
+              borderBottomWidth: 1,
+              borderStyle: "solid",
+              borderBottomColor: "#e7e7e7",
+              paddingBottom: 8,
             }}
           >
-            <Text style={{ fontSize: 20, fontWeight: "600" }}>
-              Sự kiện trong thời gian có hạn
-            </Text>
+            <View style={{ paddingLeft: 10, paddingRight: 10 }}>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                <Navigation setFilter={setFilter} filter={filter} />
+              </ScrollView>
+            </View>
           </View>
-          <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
-            {renderItem(data.slice(3, 6))}
-          </View>
-          <View
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              paddingTop: 10,
-              paddingBottom: 10,
-              flexDirection: "row",
-            }}
-          >
-            <Text style={{ fontSize: 20, fontWeight: "600" }}>
-              Kết quả khác
-            </Text>
-          </View>
-          <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
-            {renderItem(data.slice(3, 6))}
+          <View style={{ paddingLeft: 10, paddingBottom: 10, flex: 1 }}>
+            <ScrollView>
+              <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
+                {renderItem(dataSearch)}
+              </View>
+            </ScrollView>
           </View>
         </View>
-      </ScrollView>
+      </>
     </View>
   );
 };
@@ -146,6 +271,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   nonactiveInput: {
+    borderRadius: 80,
     height: 50,
     width: "100%",
     padding: 10,
@@ -155,3 +281,36 @@ const styles = StyleSheet.create({
 });
 
 export default Search;
+
+const ComponentGame = ({ imgUrl, name, rating }) => {
+  return (
+    <View
+      style={{
+        width: (Dimensions.get("window").width * 1) / 3 - 20,
+        marginBottom: 12,
+        marginRight: 16,
+      }}
+    >
+      <Image
+        style={{
+          width: "100%",
+          marginBottom: 10,
+          aspectRatio: 1 / 1,
+          borderRadius: 10,
+          objectFit: "contain",
+        }}
+        alt={""}
+        source={{
+          uri: imgUrl,
+        }}
+      />
+      <Text numberOfLines={2} ellipsizeMode="tail" style={{ color: "#000" }}>
+        {name}
+      </Text>
+      <Text>
+        {rating}
+        <Ionicons name="star" size={12} style={{ marginLeft: 2 }} />
+      </Text>
+    </View>
+  );
+};

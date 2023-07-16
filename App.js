@@ -14,6 +14,11 @@ import { View } from "react-native";
 import { Text } from "react-native";
 import { TextInput } from "react-native";
 import { Button } from "react-native";
+import AddList2 from "./app/screen/AddList2/AddList2";
+import Searching from "./app/screen/Searching/Searching";
+import AddRandomImage from "./app/screen/AddRandomImage/AddRandomImage";
+import AddRandomImageGame from "./app/screen/AddRandomImageGame/AddRandomImageGame";
+import AddList3 from "./app/screen/AddList3/AddList3";
 LogBox.ignoreAllLogs();
 const RootStack = createStackNavigator();
 
@@ -100,6 +105,7 @@ export default function App() {
   useEffect(() => {
     AsyncStorage.getItem("data")
       .then((json) => {
+        console.log(json)
         if (json !== null) {
           const myData = JSON.parse(json);
           setData(myData);
@@ -145,47 +151,68 @@ export default function App() {
   }, []);
   //
   useEffect(() => {
-    let startTime1;
-    AsyncStorage.getItem("point_time")
-      .then((json) => {
-        if (json !== null) {
-          setStartTime(json);
-          startTime1 = json;
-        }
-      })
-      .catch((e) => {
-        //console.log("Lấy thất bại", e);
-      });
-
     const interval = setInterval(() => {
-      const currentTime = new Date().getTime();
-      const elapsedTime = currentTime - startTime1;
-      if (elapsedTime >= parseInt(availableHours) * 3600 * 1000) {
-        // //console.log("test");
-        setShowPopup(true); // Hiển thị popup sau 1 giờ
-        clearInterval(interval);
-      }
+      let startTime1;
+      AsyncStorage.getItem("point_time")
+        .then((json) => {
+          if (json !== null) {
+            setStartTime(json);
+            startTime1 = json;
+            const currentTime = new Date().getTime();
+            const elapsedTime = currentTime - json;
+            // console.log(startTime1)
+            // console.log(elapsedTime)
+            if (elapsedTime >= parseInt(availableHours) * 60 * 1000) {
+              // //console.log("test");
+              const jsonValue = JSON.stringify(currentTime);
+              AsyncStorage.setItem("point_time", jsonValue);
+              setShowPopup(true); // Hiển thị popup sau 1 giờ
+            }
+          }
+        })
+        .catch((e) => {
+          //console.log("Lấy thất bại", e);
+        });
     }, 1000); // Kiểm tra mỗi giây
 
     return () => {
       clearInterval(interval); // Xóa interval khi component bị unmount
     };
   }, [availableHours]);
+
+  useEffect(() => {
+    AsyncStorage.getItem("pass_admin")
+      .then((json) => {
+        if (json) {
+          // console.log(1)
+        } else {
+          AsyncStorage.setItem("pass_admin", JSON.stringify("123456789"));
+          // .then(()=> console.log("Lưu thành công"))
+          // .catch(()=> console.log("Lưu thất bại"))
+        }
+      })
+      .catch((e) => {
+        console.log("Thất bại thiết lập", e);
+      });
+  }, []);
   //
   const checkPassword = (password, keysArray) => {
-    if (keysArray.includes(password) == true) {
-      const pointTime = new Date().getTime();
-      const jsonValue = JSON.stringify(pointTime);
-      AsyncStorage.setItem("point_time", jsonValue)
-        .then(() => {
-          //console.log("Lưu thành công");
-        })
-        .catch((e) => {
-          //console.log("Thất bại lưu", e);
-        });
-      setShowPopup(false);
-    } else {
-      setShowPopup(true);
+    if (password?.trim()?.length > 0) {
+      if (keysArray.includes(password) == true) {
+        const pointTime = new Date().getTime();
+        const jsonValue = JSON.stringify(pointTime);
+        AsyncStorage.setItem("point_time", jsonValue)
+          .then(() => {
+            //console.log("Lưu thành công");
+          })
+          .catch((e) => {
+            //console.log("Thất bại lưu", e);
+          });
+        setPassword("");
+        setShowPopup(false);
+      } else {
+        setShowPopup(true);
+      }
     }
   };
 
@@ -222,7 +249,50 @@ export default function App() {
               headerShown: false,
             }}
           />
-          <RootStack.Screen name="AddList" component={AddList} options={{}} />
+          <RootStack.Screen
+            name="AddList"
+            component={AddList}
+            options={{ headerTitle: "Cấu hình" }}
+          />
+          <RootStack.Screen
+            name="AddList2"
+            component={AddList2}
+            options={{ headerTitle: "Thiết lập mật khẩu admin" }}
+          />
+          <RootStack.Screen
+            name="Searching"
+            component={Searching}
+            screenOptions={{
+              headerShown: false,
+            }}
+            options={{ headerShown: false, animationEnabled: false }}
+          />
+          <RootStack.Screen
+            name="AddRandomImage"
+            component={AddRandomImage}
+            options={{headerTitle: "Thêm danh sách ảnh ngẫu nhiên"}}
+            screenOptions={{
+              headerTitle: "Thêm danh sách ảnh ngẫu nhiên",
+            }}
+          />
+          <RootStack.Screen
+            name="AddRandomImageGame"
+            component={AddRandomImageGame}
+            options={{headerTitle: "Thêm danh sách ảnh cho game"}}
+            screenOptions={{
+              headerTitle: "Thêm danh sách ảnh cho game",
+            }}
+          />
+          <RootStack.Screen
+            name="AddList3"
+            component={AddList3}
+            options={{
+              headerTitle: "Thêm danh sách quảng cáo tìm kiếm"
+            }}
+            screenOptions={{
+              headerTitle: "Thêm danh sách quảng cáo tìm kiếm",
+            }}
+          />
         </RootStack.Navigator>
       </NavigationContainer>
       {showPopup === true && (
@@ -236,6 +306,7 @@ export default function App() {
                   secureTextEntry={true}
                   value={password}
                   onChangeText={setPassword}
+                  autoFocus
                 />
                 <Button
                   title="Xác nhận"

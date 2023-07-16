@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import Modal from "react-native-modal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
+import moment from "moment/moment";
 
 const generateUniqueKeys = () => {
   // const keys = [];
@@ -145,11 +146,16 @@ const AddList = () => {
   const [uAvatar, setUAvatar] = useState("");
   const [available, setAvailable] = useState(0);
   const [editingIndex, setEditingIndex] = useState(-1);
-  const { data, setData, setUserAvatar, setAvailabelHours } =
+  const { data, setData, setUserAvatar, setAvailabelHours, availableHours } =
     useContext(AppContext);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [isPopupVisible1, setIsPopupVisible1] = useState(false);
+  const [isPopupVisible2, setIsPopupVisible2] = useState(false);
+  const [isSetAvailable, setIsSetAvailable] = useState(false);
+  const [passAdmin, setPassAdmin] = useState("");
+  const [restTime, setRestTime] = useState();
+  const restTimeRef = useRef();
 
   const renderItem = (data) => {
     return data?.map((item, index) => (
@@ -182,15 +188,15 @@ const AddList = () => {
   const handleAddData = () => {
     const newData = {
       id: uuid.v4(),
-      name: name,
-      rating: rating,
-      storage: storage,
-      genre: genre,
-      author: author,
-      cover_picture: coverPicture,
-      avatar,
-      link_app: linkApp,
-      install: 0,
+      name: name?.trim(),
+      rating: rating?.trim(),
+      storage: storage?.trim(),
+      genre: genre?.trim(),
+      author: author?.trim(),
+      cover_picture: coverPicture?.trim(),
+      avatar: avatar?.trim(),
+      link_app: linkApp?.trim(),
+      install: 0
     };
 
     setData([...data, newData]);
@@ -208,14 +214,14 @@ const AddList = () => {
     const updatedData = [...data];
     updatedData[editingIndex] = {
       ...updatedData[editingIndex],
-      name: name,
-      rating: rating,
-      storage: storage,
-      genre: genre,
-      author: author,
-      cover_picture: coverPicture,
-      avatar: avatar,
-      link_app: linkApp,
+      name: name?.trim(),
+      rating: rating?.trim(),
+      storage: storage?.trim(),
+      genre: genre?.trim(),
+      author: author?.trim(),
+      cover_picture: coverPicture?.trim(),
+      avatar: avatar?.trim(),
+      link_app: linkApp?.trim(),
     };
     setData(updatedData);
     setIsEditModalVisible(false);
@@ -228,6 +234,7 @@ const AddList = () => {
     setCoverPicture("");
     setAvatar("");
     setLinkApp("");
+
     const jsonValue = JSON.stringify(updatedData);
     AsyncStorage.setItem("data", jsonValue)
       .then(() => {
@@ -256,24 +263,24 @@ const AddList = () => {
     const jsonValue = JSON.stringify(data);
     AsyncStorage.setItem("data", jsonValue)
       .then(() => {
-        //console.log("Lưu thành công")
+        console.log("Lưu thành công")
       })
       .catch((e) => {
-        //console.log("Thất bại lưu", e)
+        console.log("Thất bại lưu", e)
       });
     navigation.navigate("Game");
   };
 
   const handleEditModalOpen = (index) => {
     const item = data[index];
-    setName(item.name);
-    setRating(item.rating);
-    setStorage(item.storage);
-    setGenre(item.genre);
-    setAuthor(item.author);
-    setCoverPicture(item.cover_picture);
-    setAvatar(item.avatar);
-    setLinkApp(item.link_app);
+    setName(item.name?.trim());
+    setRating(item.rating?.trim());
+    setStorage(item.storage?.trim());
+    setGenre(item.genre?.trim());
+    setAuthor(item.author?.trim());
+    setCoverPicture(item.cover_picture?.trim());
+    setAvatar(item.avatar?.trim());
+    setLinkApp(item.link_app?.trim());
     setEditingIndex(index);
     setIsEditModalVisible(true);
   };
@@ -291,6 +298,75 @@ const AddList = () => {
     setAvatar("");
     setLinkApp("");
   };
+
+  useEffect(() => {
+    AsyncStorage.getItem("available")
+      .then((json) => {
+        if (json) {
+          setIsSetAvailable(true);
+        } else {
+          setIsSetAvailable(false);
+        }
+      })
+      .catch((e) => {
+        console.log("Thất bại lưu thời gian", e);
+      });
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.getItem("available")
+      .then((json) => {
+        if (json !== null) {
+          const myData = JSON.parse(json);
+          //console.log("josn", myData)
+          setAvailabelHours(myData);
+        }
+      })
+      .catch((e) => {
+        //console.log("Lấy thất bại", e);
+      });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      AsyncStorage.getItem("point_time")
+        .then((json) => {
+          if (json !== null) {
+            const currentTime = new Date().getTime();
+            const elapsedTime = currentTime - json;
+            // console.log(startTime1)
+            // console.log(Math.floor((parseInt(availableHours) * 1000 * 20 - Math.floor(elapsedTime)) / 1000))
+            let fTime = Math.floor(
+              (parseInt(availableHours) * 1000 * 60 - Math.floor(elapsedTime)) /
+                1000
+            );
+            if (fTime <= 0) {
+              fTime = 0;
+            }
+            // const formattedTime = moment()
+            //   .startOf("day")
+            //   .seconds(fTime)
+            //   .format("HH:mm:ss");
+              const formattedTime = moment().startOf('day').seconds(fTime);
+            const currentTime1 = moment();
+
+            const duration = moment.duration(formattedTime.diff(currentTime1));
+            const days = duration.days();
+            const formattedDuration = `${days}ngày ${formattedTime.format(
+              "HH:mm:ss"
+            )}`;
+            setRestTime(formattedDuration);
+          }
+        })
+        .catch((e) => {
+          //console.log("Lấy thất bại", e);
+        });
+    }, 1000); // Kiểm tra mỗi giây
+
+    return () => {
+      clearInterval(interval); // Xóa interval khi component bị unmount
+    };
+  }, [availableHours]);
 
   return (
     <ScrollView>
@@ -322,40 +398,83 @@ const AddList = () => {
             Set user avatar
           </Button>
         </View>
-        <View style={{ marginBottom: 20 }}>
-          <TextInput
-            style={styles.input}
-            placeholder="Tính thời gian bản quyền(Giờ)"
-            value={available}
-            onChangeText={(text) => setAvailable(parseInt(text))}
-          />
-          <Button
-            onPress={() => {
-              setAvailabelHours(available);
-              setIsPopupVisible1(true);
-              const jsonValue = JSON.stringify(available);
-              AsyncStorage.setItem("available", jsonValue)
-                .then(() => {
-                  //console.log("Lưu thành công")
-                })
-                .catch((e) => {
-                  //console.log("Thất bại lưu", e)
-                });
-              const jsonValue2 = JSON.stringify(generateUniqueKeys());
-              AsyncStorage.setItem("list_key", jsonValue2)
-                .then(() => {
-                  //console.log("Lưu thành công")
-                })
-                .catch((e) => {
-                  //console.log("Thất bại lưu", e)
-                });
-            }}
-            title={"Đặt thời gian"}
-            color={"#2e89ff"}
-          >
-            Đặt thời gian bản quyền
-          </Button>
+        <View style={{ marginBottom: 18 }}>
+          <Text style={{ fontSize: 17 }}>Thời gian còn lại: {restTime}</Text>
         </View>
+        {isSetAvailable === false && (
+          <View style={{ marginBottom: 20 }}>
+            <TextInput
+              style={styles.input}
+              placeholder="Tính thời gian bản quyền(Phút)"
+              value={available}
+              onChangeText={(text) => setAvailable(parseInt(text))}
+            />
+            <Button
+              onPress={() => {
+                setAvailabelHours(available);
+                setIsPopupVisible1(true);
+                const jsonValue = JSON.stringify(available);
+                AsyncStorage.setItem("available", jsonValue)
+                  .then(() => {
+                    // console.log("Lưu thành công thời gian");
+                  })
+                  .catch((e) => {
+                    // console.log("Thất bại lưu thời gian", e);
+                  });
+                const jsonValue2 = JSON.stringify(generateUniqueKeys());
+                AsyncStorage.setItem("list_key", jsonValue2)
+                  .then(() => {
+                    // console.log("Lưu thành công mảng key");
+                  })
+                  .catch((e) => {
+                    // console.log("Thất bại lưu mảng key", e);
+                  });
+                const pointTime = new Date().getTime();
+                const jsonValue3 = JSON.stringify(pointTime);
+                AsyncStorage.setItem("point_time", jsonValue3)
+                  .then(() => {
+                    // console.log("Lưu thành công point time");
+                  })
+                  .catch((e) => {
+                    // console.log("Thất bại lưu point time", e);
+                  });
+              }}
+              title={"Đặt thời gian"}
+              color={"#2e89ff"}
+            >
+              Đặt thời gian bản quyền
+            </Button>
+          </View>
+        )}
+        {isSetAvailable === true && (
+          <View style={{ marginBottom: 20 }}>
+            <TextInput
+              style={styles.input}
+              placeholder="Nhập mật khẩu admin"
+              value={passAdmin}
+              onChangeText={(text) => setPassAdmin(text)}
+              secureTextEntry={true}
+            />
+            <Button
+              onPress={() => {
+                AsyncStorage.getItem("pass_admin")
+                  .then((json) => {
+                    // console.log(JSON.parse(json), passAdmin.toString())
+                    if (passAdmin == JSON.parse(json)) {
+                      setIsSetAvailable(false);
+                    } else {
+                      setIsPopupVisible2(true);
+                    }
+                  })
+                  .catch((e) => console.log(e));
+              }}
+              title={"Nhập mật khẩu admin"}
+              color={"#2e89ff"}
+            >
+              Nhập mật khẩu Admin
+            </Button>
+          </View>
+        )}
         {/* Existing data */}
         <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
           {renderItem(data)}
@@ -497,6 +616,14 @@ const AddList = () => {
         >
           <View style={styles.popupContainer}>
             <Text style={styles.popupText}>Thêm thành công</Text>
+          </View>
+        </Modal>
+        <Modal
+          isVisible={isPopupVisible2}
+          onBackdropPress={() => setIsPopupVisible2(false)}
+        >
+          <View style={styles.popupContainer}>
+            <Text style={styles.popupText}>Sai mật khẩu admin</Text>
           </View>
         </Modal>
         <Modal

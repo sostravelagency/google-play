@@ -45,8 +45,8 @@ const ComponentGame = ({cover_picture, avatar, name, genre, rating, storage}) =>
             flex: 1
           }}
         >
-          <Text numberOfLines={1} style={{ fontSize: 18, width: "100%" }}>{name}</Text>
-          <Text numberOfLines={1} style={{ fontSize: 14, width: "100%"  }}>{genre}</Text>
+          <Text numberOfLines={1} style={{ fontSize: 16, width: "100%" }}>{name}</Text>
+          <Text numberOfLines={1} style={{ fontSize: 13, width: "100%"  }}>{genre}</Text>
           <View
             style={{
               display: "flex",
@@ -54,9 +54,9 @@ const ComponentGame = ({cover_picture, avatar, name, genre, rating, storage}) =>
               flexDirection: "row",
             }}
           >
-            <Text>{rating}</Text>
-            <Ionicons name="star" size={14} style={{ marginLeft: 2 }} />
-            <Text style={{ marginLeft: 8 }}>{storage}</Text>
+            <Text style={{fontSize: 13}}>{rating}</Text>
+            <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
+            <Text style={{ marginLeft: 8, fontSize: 13 }}>{storage}</Text>
           </View>
         </View>
       </View>

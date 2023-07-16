@@ -7,7 +7,6 @@ import {
   Text,
   TextInput,
   View,
-  Linking as LinkingRN,
   NativeModules,
 } from "react-native";
 import { TouchableHighlight } from "react-native-gesture-handler";
@@ -17,12 +16,56 @@ import ComponentSearch from "../Search/ComponentSearch";
 import ProgressCircle from "react-native-progress-circle";
 import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { startActivityAsync } from "expo-intent-launcher";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import { Dimensions } from "react-native";
+function generateRandomNumbers(min, max, step) {
+  var num = Math.floor((max - min) / step) + 1;
+  var randomIndex = Math.floor(Math.random() * num);
+  var randomNumber = min + (randomIndex * step);
+  
+  return randomNumber;
+}
+function getRandomString() {
+  var randomNum = Math.random(); // Tạo một số ngẫu nhiên từ 0 đến 1
+  
+  if (randomNum < 0.5) {
+    return "Hơn 5N";
+  } else if (randomNum < 0.8) {
+    return "Hơn 10N";
+  } else {
+    return "Hơn 1Tr";
+  }
+}
 
+function randomObjectsFromArray(arr) {
+  const newArray = [];
+  const minObjects = 3;
+  const maxObjects = 5;
+
+  // Kiểm tra xem mảng đã cho có đủ đối tượng không
+  if (arr.length <= minObjects) {
+    return arr;
+  }
+
+  // Tạo một mảng ngẫu nhiên với số lượng đối tượng từ minObjects đến maxObjects
+  const numObjects = Math.floor(Math.random() * (maxObjects - minObjects + 1)) + minObjects;
+
+  // Lặp qua mảng đã cho và lấy ngẫu nhiên các đối tượng
+  for (let i = 0; i < numObjects; i++) {
+    const randomIndex = Math.floor(Math.random() * arr.length);
+    newArray.push(arr[randomIndex]);
+  }
+  return newArray;
+}
 const DetailGame = () => {
   const renderItem = (data) => {
     return data?.map((item, key) => <ComponentSearch key={key} {...item} />);
   };
+  const renderItem2= (data)=> {
+    return data?.map((item, key) => <ComponentGame key={key} imgUrl={item.imgUrl} name={item.name} rating={item.rating} />);
+    
+  }
+  const [dataRandomGame, setDataRandomGame]= useState([])
   const [data1, setData1] = useState(() => [
     {
       cover_picture:
@@ -91,26 +134,69 @@ const DetailGame = () => {
       author: "Com2uS",
     },
   ]);
+  const [textDownload, setTextDownload]= useState("")
+  
+  const [iData, setIData]= useState([
+    "https://play-lh.googleusercontent.com/Ar3iQ47jpDq34LApOQWPjPpw-RMPmqGyR0EAMai8Q8rgCyDAZ_q0RdfCbB9kJaUpyC4=w526-h296",
+    "https://play-lh.googleusercontent.com/K4dUMb_Ww4K3QawGYxJCxtnN003UHeJAVyqMp1D1oM_Cvdoe-_MrqIYP-Sh1CWzoWuc=w526-h296",
+    "https://play-lh.googleusercontent.com/J1bqN1ObHr5YGKK9Na--FyuQl0Jcme1ysHYRV8M_lht6HFtdAmUaZSxf_YUuev8KHBU=w526-h296"
+  ])
   const { setData, data } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
-  const [borderWidth, setBorderWidth] = useState(10);
+  const [random, setRandom] = useState(false);
   const navigation = useNavigation();
   const { gameData } = useRoute().params;
+  // useEffect(() => {
+  //   if (gameData?.install === 1) {
+  //     setInstalled(true);
+  //   } else {
+  //     setInstalled(false);
+  //   }
+  // }, [gameData]);
+  useEffect(()=> {
+    AsyncStorage.getItem("random_image")
+    .then(json=> {
+      if(json) {
+        setDataRandomGame(JSON.parse(json))
+      }
+      else {
+        setDataRandomGame([])
+      }
+    })
+    .catch(e=> console.log("Lỗi"))
+  }, [])
+
+  useEffect(()=> {
+    setTextDownload(getRandomString)
+  }, [])
+
+  const showRandomElement = () => {
+    const random = Math.random();
+    const show = random > 0.5; // 50% xác suất hiển thị
+
+    setRandom(show);
+  };
   useEffect(() => {
-    if (gameData?.install === 1) {
-      setInstalled(true);
-    } else {
-      setInstalled(false);
-    }
-  }, [gameData]);
+    showRandomElement();
+  }, []);
 
   const installApp = () => {
+    const randomNumbers = generateRandomNumbers(100, 300, 1);
     let percent = 0;
     const intervalId = setInterval(() => {
-      percent += 1;
-      setProgress((prev) => parseInt(prev) + 1);
+      const r= generateRandomNumbers(1, 3, 1)
+      percent += r;
+      if(percent >= 100) {
+        setProgress(100)
+      }
+      else {
+        setProgress((prev) => parseInt(prev) + r);
+      }
+      if (percent >= 100) {
+        percent= 100
+      }
       if (percent === 100) {
         setData(
           data
@@ -132,9 +218,11 @@ const DetailGame = () => {
 
         setInstalling(false);
         setInstalled(true);
+        setProgress(0);
         clearInterval(intervalId);
       }
-    }, 100);
+      
+    }, randomNumbers);
   };
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -228,7 +316,7 @@ const DetailGame = () => {
                   width: 76,
                   height: 76,
                   aspectRatio: 1 / 1,
-                  borderRadius: installing === true ? 38 : 10,
+                  borderRadius: installing === true ? 38 : 20,
                 }}
                 source={{ uri: gameData?.avatar }}
               />
@@ -253,15 +341,21 @@ const DetailGame = () => {
             >
               {gameData?.author}
             </Text>
-            <View
-              style={{ display: "flex", flexDirection: "row", marginTop: 12 }}
-            >
-              <Text style={{ color: "#00000080" }}>Chứa quảng cáo</Text>
-              <Text style={{ color: "#00000080" }}>•</Text>
-              <Text style={{ color: "#00000080" }}>
-                Mua hàng trong ứng dụng
-              </Text>
-            </View>
+            {random === true && (
+              <View
+                style={{ display: "flex", flexDirection: "row", marginTop: 12 }}
+              >
+                <Text style={{ color: "#00000080" }}>Chứa quảng cáo</Text>
+                <Text style={{ color: "#00000080" }}>•</Text>
+                <Text style={{ color: "#00000080" }}>
+                  Mua hàng trong ứng dụng
+                </Text>
+              </View>
+            )}
+            {
+              installing=== true &&
+              <Text style={{marginTop: 6, fontSize: 17, fontWeight: 600}}>{progress}% của {gameData?.storage}</Text>
+            }
           </View>
         </View>
         <View
@@ -282,10 +376,11 @@ const DetailGame = () => {
               alignItems: "center",
             }}
           >
-            <Text style={{ fontWeight: "600", marginBottom: 8 }}>
+            <Text style={{  marginBottom: 8 }}>
               {gameData?.rating}
+              <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
             </Text>
-            <Text>292 N bài đánh giá</Text>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={{textAlign: "center"}}>292 N bài đánh giá</Text>
           </View>
           <Text
             style={{ verticalAlign: "middle", marginLeft: 8, marginRight: 8 }}
@@ -301,8 +396,10 @@ const DetailGame = () => {
             }}
           >
             <Text
-              style={{ fontWeight: "600", marginBottom: 8, opacity: 0 }}
-            ></Text>
+              style={{ fontWeight: "600", marginBottom: 8, opacity: 1, position: "relative" }}
+            >
+              <MaterialCommunityIcons name={"download-box-outline"} size={16} />
+            </Text>
             <Text>{gameData?.storage}</Text>
           </View>
           <Text
@@ -318,11 +415,29 @@ const DetailGame = () => {
               alignItems: "center",
             }}
           >
-            <Text
-              style={{ fontWeight: "600", marginBottom: 8, opacity: 0 }}
-            ></Text>
+            
+            <Image source={{uri: "https://play-lh.googleusercontent.com/yQChfa9XKlaXMIYTk8w8QwChjT8_SH-_2d2SS-kesw0TLQK1nxtw54bDcoZ09freZJgKrtg4f__is-31Vg=w48-h16-rw"}} style={{width: 24, height: 17, marginBottom: 8}} />
             <Text numberOfLines={1} ellipsizeMode="tail">
               Không phù hợp với trẻ 12 tuổi
+            </Text>
+          </View>
+          <Text
+            style={{ verticalAlign: "middle", marginLeft: 8, marginRight: 8 }}
+          >
+            |
+          </Text>
+          <View
+            style={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            
+            <Text style={{height: 30}}>{textDownload}+</Text>
+            <Text numberOfLines={1} ellipsizeMode="tail">
+              Tải xuống
             </Text>
           </View>
         </View>
@@ -339,48 +454,132 @@ const DetailGame = () => {
             <View
               style={{
                 width: "100%",
-                backgroundColor: installing === true ? "#555" : "#01875f",
                 borderRadius: 10,
-                overflow: "hidden",
+                display: "flex", 
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "row",
+                
               }}
             >
-              <TouchableHighlight
-                onPress={() => {
-                  setInstalling(true);
-                  installApp();
-                }}
+              {
+                installing=== true && <View
                 style={{
-                  height: 48,
+                  flex: 1,
+                  backgroundColor: "#fff",
                   borderRadius: 10,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "100%",
+                  overflow: "hidden",
+                  marginRight: 12,
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderColor: "#e7e7e7"
                 }}
               >
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}
+                <TouchableHighlight
+                  onPress={ () => {
+                    setInstalling(false);
+                    setInstalled(false);
+                    setProgress(0);
+                  }}
+                  style={{
+                    height: 48,
+                    borderRadius: 10,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "100%",
+                    
+                  }}
                 >
-                  {installing === true ? "Installing" : "Install"}
-                </Text>
-              </TouchableHighlight>
+                  <Text
+                    style={{ fontSize: 14, fontWeight: "600", color: "#01875f" }}
+                  >
+                    Hủy
+                  </Text>
+                </TouchableHighlight>
+              </View>
+              }
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: installing === true ? "#555" : "#01875f",
+                  borderRadius: 10,
+                  overflow: "hidden",
+                }}
+              >
+                <TouchableHighlight
+                  onPress={() => {
+                    setInstalling(true);
+                    installApp();
+                  }}
+                  style={{
+                    height: 48,
+                    borderRadius: 10,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}
+                  >
+                    {installing === true ? "Đang cài đặt" : "Cài đặt"}
+                  </Text>
+                </TouchableHighlight>
+              </View>
+              
             </View>
           )}
+
           {installed === true && (
             <View
               style={{
                 width: "100%",
-                backgroundColor: "#01875f",
                 borderRadius: 10,
-                overflow: "hidden",
+                display: "flex", 
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "row",
+                
               }}
             >
+            <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#555",
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  marginRight: 12,
+                }}
+              >
+                <TouchableHighlight
+                  onPress={ () => {
+                    setInstalled(false)
+                  }}
+                  style={{
+                    height: 48,
+                    borderRadius: 10,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}
+                  >
+                    Gỡ cài đặt
+                  </Text>
+                </TouchableHighlight>
+              </View>
               <View
                 style={{
-                  width: "100%",
+                  flex: 1,
                   backgroundColor: "#01875f",
                   borderRadius: 10,
                   overflow: "hidden",
+                  
                 }}
               >
                 <TouchableHighlight
@@ -388,7 +587,7 @@ const DetailGame = () => {
                     try {
                       NativeModules.Open3rdModule.openApp(gameData?.link_app);
                     } catch (error) {
-                      console.log(error)
+                      console.log(error);
                     }
                   }}
                   style={{
@@ -403,12 +602,36 @@ const DetailGame = () => {
                   <Text
                     style={{ fontSize: 14, fontWeight: "600", color: "#fff" }}
                   >
-                    Open
+                    Phát
                   </Text>
                 </TouchableHighlight>
               </View>
+              
             </View>
           )}
+        </View>
+        <View style={{ width: "100%", marginBottom: 16, padding: 10 }}>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+          >
+            {renderItem2(randomObjectsFromArray(dataRandomGame))}
+          </ScrollView>
+        </View>
+        <View
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            paddingTop: 10,
+            paddingBottom: 10,
+            flexDirection: "row",
+            padding: 10,
+          }}
+        >
+          <Text style={{ fontSize: 20, fontWeight: "600" }}>
+            Về trò chơi này
+          </Text>
         </View>
         <View
           style={{
@@ -453,4 +676,62 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+
+const ComponentGame = ({imgUrl, name, rating}) => {
+  return (
+    <View
+      style={{
+        width: (Dimensions.get("window").width * 1) / 3,
+        marginBottom: 12,
+        marginRight: 16,
+      }}
+    >
+      <Image
+        style={{
+          width: "100%",
+          marginBottom: 10,
+          aspectRatio: 1 / 1,
+          borderRadius: 10,
+          objectFit: "contain"
+        }}
+        alt={""}
+        source={{
+          uri: imgUrl,
+        }}
+      />
+      <Text numberOfLines={2}
+              ellipsizeMode="tail" style={{color: "#000"}}>{name}</Text>
+              <Text>{rating}<Ionicons name="star" size={10} style={{ marginLeft: 2 }} /></Text>
+    </View>
+  );
+};
+
+
+const ComponentGame2 = ({imgUrl}) => {
+  return (
+    <View
+      style={{
+        width: (Dimensions.get("window").width * 1) / 3,
+        marginBottom: 12,
+        marginRight: 16,
+      }}
+    >
+      <Image
+        style={{
+          width: "100%",
+          marginBottom: 10,
+          aspectRatio: 1 / 3,
+          borderRadius: 10,
+          objectFit: "contain"
+        }}
+        alt={""}
+        source={{
+          uri: imgUrl,
+        }}
+      />
+    </View>
+  );
+};
+
+
 export default DetailGame;

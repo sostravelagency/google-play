@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Image,
   NativeModules,
@@ -11,13 +11,15 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import ComponentGame from "../../component/ComponentGame";
 import Navigation from "../../component/Game/Navigation";
-import { useNavigation } from "@react-navigation/native";
+import {  useNavigation } from "@react-navigation/native";
 import { AppContext } from "../../../App";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Game = () => {
   const {userAvatar }= useContext(AppContext)
   const navigation= useNavigation()
   const [searchQuery, setSearchQuery]= useState("")
+  const [isFocus, setIsFocus]= useState(false)
   const [data, setData]= useState(()=> ([
     {cover_picture: "https://play-lh.googleusercontent.com/4W4B3NXDXDnKAaM7-IkJrNOkpHkFFzyFiVmZprJ_yxKWR_gpA-nSMi1RDPyG00vuhewv=w526-h296-rw", avatar: "https://play-lh.googleusercontent.com/S3GPwY1-mc5876ZnMk65-VrG3Xlh1R8zgK-Q_LlnbjZ7llyyv0ZGWIlNnBM7LckMMzYy=w240-h480-rw", name: "Liên quân mobile", rating: "3,4", storage: "1,25GB", genre: "Nhập vai • Moba"},
     {cover_picture: "https://play-lh.googleusercontent.com/8WKe8Rl1s0eQnFRmYclwkKMQxRHyktBSYaeWmGUERgHEYquf_cuTS3OkVPnAHQjETg=w526-h296-rw", avatar: "https://play-lh.googleusercontent.com/S6jJOnBBC1qGmbgW3x15JykBS_6WmwBkP6ub_Iiga6FEIZqgjfX__5fA8y_kSp1CBJc=w240-h480-rw", name: "Plants vs. Zombies", rating: "4,2", storage: "124MB" , genre: "Chiến đâu • Giải trí"},
@@ -30,6 +32,18 @@ const Game = () => {
   const renderItem= (data)=> {
     return data?.map((item, key)=> <ComponentGame key={key} {...item} />)
   }
+
+  const updateReturnKeyType = () => {
+    const returnKeyType = searchQuery.length > 0 ? 'search' : 'done';
+    TextInput.State.currentlyFocusedInput()?.setNativeProps({
+      returnKeyType: returnKeyType
+    });
+  };
+
+  useEffect(() => {
+    updateReturnKeyType();
+  }, [searchQuery]);
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView>
@@ -59,7 +73,6 @@ const Game = () => {
                 position: "relative",
               }}
             >
-              {console.log(searchQuery)}
               <Ionicons
                 name={"search"}
                 onPress={()=> navigation.navigate("Search", {searchQuery: searchQuery})}
@@ -74,7 +87,14 @@ const Game = () => {
                 }}
               />
               <TextInput
-                onChangeText={setSearchQuery}
+                showSoftInputOnFocus={false} 
+                onFocus={()=> {
+                  navigation.navigate("Searching")
+                }}
+                onBlur={()=> setIsFocus(false)}
+                onChangeText={(e)=> {
+                  setSearchQuery(e)
+                }}
                 style={{
                   borderRadius: 80,
                   backgroundColor: "#e5f1f9",
@@ -84,12 +104,15 @@ const Game = () => {
                   paddingLeft: 45,
                   fontSize: 18,
                 }}
+                
                 caretHidden={false}
                 selectionColor={"#000"}
                 placeholder="Tìm kiếm ứng dụng"
+                // returnKeyType={searchQuery.length > 0 ? "search" : "default"}
+                onSubmitEditing={()=> navigation.navigate("Search", {searchQuery})}
+                enablesReturnKeyAutomatically={true}
               />
               <TouchableOpacity 
-                onPress={() => NativeModules.Open3rdModule.openApp(searchQuery)}
                 style={{
                   position: "absolute",
                   top: "50%",
@@ -105,17 +128,18 @@ const Game = () => {
             </View>
             <Ionicons
               name={"notifications-outline"}
-              size={32}
+              size={20}
               style={{ marginLeft: 12 }}
             />
             <Image
               style={{
-                width: 32,
-                height: 32,
+                width: 28,
+                height: 28,
                 borderRadius: 15,
                 marginLeft: 12,
+                marginRight: 10
               }}
-              alt={"Can't open"}
+              alt={"Không thể mở"}
               source={{
                 uri: userAvatar || ""
               }}
@@ -178,7 +202,7 @@ const Game = () => {
             <Text style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}>
               •
             </Text>
-            <Text style={{ fontSize: 20, fontWeight: "600" }}>
+            <Text onPress={()=> AsyncStorage.clear()} style={{ fontSize: 20, fontWeight: "600" }}>
               Được đề xuất cho bạn
             </Text>
           </View>
