@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
+import React, { useContext } from "react";
 import {
   Dimensions,
   Image,
@@ -8,10 +8,13 @@ import {
   TouchableHighlight,
   View,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import Ionicons from "react-native-vector-icons/Ionicons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import { AppContext } from "../../../App";
 
-const ComponentSearch = ({ author, avatar, name, genre, rating, storage, link_app, id, install }) => {
+const ComponentSearch = ({ author, avatar, name, genre, rating, storage, link_app, id, install, download }) => {
   const navigation = useNavigation();
+  const {iconSize }= useContext(AppContext)
 
   return (
     <View
@@ -31,7 +34,7 @@ const ComponentSearch = ({ author, avatar, name, genre, rating, storage, link_ap
           }}
         >
           <Image
-            style={{ width: 64, height: 64, borderRadius: 10 }}
+            style={{ width: iconSize, height: iconSize, borderRadius: 10 }}
             alt={""}
             source={{
               uri: avatar,
@@ -42,7 +45,7 @@ const ComponentSearch = ({ author, avatar, name, genre, rating, storage, link_ap
               display: "flex",
               justifyContent: "space-between",
               marginLeft: 12,
-              width: Dimensions.get("window").width - 64 - 20 - 20,
+              
             }}
           >
             <Text numberOfLines={1} style={{ fontSize: 16, width: "100%", fontWeight: "600" }}>
@@ -66,7 +69,11 @@ const ComponentSearch = ({ author, avatar, name, genre, rating, storage, link_ap
               <Text style={{ fontSize: 13 }}>{rating}</Text>
               <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
               <Text style={{ marginLeft: 8, fontSize: 13 }}>{storage}</Text>
+              <MaterialCommunityIcons name="download-box-outline" size={14} style={{ marginLeft: 12 }} />
+              <Text style={{ fontSize: 13, marginLeft: 4 }}>{download}</Text>
             </View>
+            {/*  */}
+            
           </View>
         </View>
       </TouchableHighlight>

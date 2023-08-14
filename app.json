@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.giang10a1dz.googleplayclone"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +30,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "7ff9cb22-7978-418f-8233-c52b8680c772"
+        "projectId": "d584931f-7ed0-4207-82fe-a78447d8f85c"
       }
     }
   }

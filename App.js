@@ -101,6 +101,7 @@ export default function App() {
   const [showPopup, setShowPopup] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [password, setPassword] = useState("");
+  const [iconSize, setIconSize]= useState()
 
   useEffect(() => {
     AsyncStorage.getItem("data")
@@ -148,6 +149,18 @@ export default function App() {
       .catch((e) => {
         //console.log("Lấy thất bại", e);
       });
+    AsyncStorage.getItem("size_icon")
+    .then(json=> {
+      if(json) {
+        setIconSize(parseInt(JSON.parse(json)))
+      }
+      else {
+        setIconSize(12)
+      }
+    })
+    .catch(e=> {
+      setIconSize(12)
+    })
   }, []);
   //
   useEffect(() => {
@@ -225,6 +238,8 @@ export default function App() {
         setUserAvatar,
         setAvailabelHours,
         availableHours,
+        setIconSize,
+        iconSize
       }}
     >
       <StatusBar />

@@ -16,6 +16,8 @@ import Navigation from "../../component/Search/Navigation";
 import ComponentSearch from "../../component/Search/ComponentSearch";
 import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+
 function shuffle(array) {
   const shuffledArray = [...array];
   const length = shuffledArray.length;
@@ -83,6 +85,7 @@ const Search = () => {
   const [activeInput, setActiveInput] = useState(false);
   const { data } = useContext(AppContext);
   const [adsData, setAdsData]= useState([])
+
   const [dataSearch, setDataSearch] = useState(
     sortByProperty(data, "rating").reverse()
   );
@@ -135,6 +138,7 @@ const Search = () => {
         imgUrl={item.imgUrl}
         name={item.name}
         rating={item.rating}
+        download={item.download}
       />
     ));
   };
@@ -282,7 +286,9 @@ const styles = StyleSheet.create({
 
 export default Search;
 
-const ComponentGame = ({ imgUrl, name, rating }) => {
+const ComponentGame = ({ imgUrl, name, rating, download }) => {
+  const {iconSize }= useContext(AppContext)
+
   return (
     <View
       style={{
@@ -309,8 +315,15 @@ const ComponentGame = ({ imgUrl, name, rating }) => {
       </Text>
       <Text>
         {rating}
-        <Ionicons name="star" size={12} style={{ marginLeft: 2 }} />
+        <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
       </Text>
+      {
+        download && 
+        <Text>
+          <MaterialCommunityIcons name="download-box-outline" size={14} style={{ marginLeft: 2 }} />
+          {download}
+        </Text>
+      }
     </View>
   );
 };

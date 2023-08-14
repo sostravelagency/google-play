@@ -16,7 +16,8 @@ import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Game = () => {
-  const {userAvatar }= useContext(AppContext)
+  const {userAvatar, iconSize }= useContext(AppContext)
+  // console.log(iconSize)
   const navigation= useNavigation()
   const [searchQuery, setSearchQuery]= useState("")
   const [isFocus, setIsFocus]= useState(false)

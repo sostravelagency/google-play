@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   Button,
+  Alert,
 } from "react-native";
 // import ComponentSearch from '../../component/Search/ComponentSearch';
 import { AppContext } from "../../../App";
@@ -144,9 +145,11 @@ const AddList = () => {
   const [linkApp, setLinkApp] = useState("");
   const [install, setInstall] = useState(false);
   const [uAvatar, setUAvatar] = useState("");
+  const [iconApp, setIconApp]= useState()
+  const [download, setDownload]= useState("")
   const [available, setAvailable] = useState(0);
   const [editingIndex, setEditingIndex] = useState(-1);
-  const { data, setData, setUserAvatar, setAvailabelHours, availableHours } =
+  const { data, setData, setUserAvatar, setAvailabelHours, availableHours, setIconSize } =
     useContext(AppContext);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -168,6 +171,7 @@ const AddList = () => {
           <Text style={styles.storage}>{item.storage}</Text>
           <Text style={styles.genre}>{item.genre}</Text>
           <Text style={styles.author}>{item.author}</Text>
+          <Text style={styles.author}>{item.download}</Text>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => handleEditModalOpen(index)}
@@ -196,6 +200,7 @@ const AddList = () => {
       cover_picture: coverPicture?.trim(),
       avatar: avatar?.trim(),
       link_app: linkApp?.trim(),
+      download: download.trim(),
       install: 0
     };
 
@@ -208,6 +213,7 @@ const AddList = () => {
     setCoverPicture("");
     setAvatar("");
     setLinkApp("");
+    setDownload("")
   };
 
   const handleEditData = () => {
@@ -222,6 +228,7 @@ const AddList = () => {
       cover_picture: coverPicture?.trim(),
       avatar: avatar?.trim(),
       link_app: linkApp?.trim(),
+      download: download?.trim()
     };
     setData(updatedData);
     setIsEditModalVisible(false);
@@ -234,6 +241,7 @@ const AddList = () => {
     setCoverPicture("");
     setAvatar("");
     setLinkApp("");
+    setDownload("")
 
     const jsonValue = JSON.stringify(updatedData);
     AsyncStorage.setItem("data", jsonValue)
@@ -281,6 +289,7 @@ const AddList = () => {
     setCoverPicture(item.cover_picture?.trim());
     setAvatar(item.avatar?.trim());
     setLinkApp(item.link_app?.trim());
+    setDownload(item.download?.trim())
     setEditingIndex(index);
     setIsEditModalVisible(true);
   };
@@ -297,6 +306,7 @@ const AddList = () => {
     setCoverPicture("");
     setAvatar("");
     setLinkApp("");
+    setDownload("")
   };
 
   useEffect(() => {
@@ -396,6 +406,37 @@ const AddList = () => {
             color={"#2e89ff"}
           >
             Set user avatar
+          </Button>
+        </View>
+        {/*  */}
+        <View style={{ marginBottom: 20 }}>
+          <TextInput
+            style={styles.input}
+            placeholder="Size icon app"
+            value={iconApp}
+            onChangeText={(text) => setIconApp(text)}
+          />
+          <Button
+            onPress={() => {
+              setIconApp(iconApp);
+              const jsonValue = JSON.stringify(iconApp);
+              AsyncStorage.setItem("size_icon", jsonValue)
+                .then(() => {
+                  //console.log("Lưu thành công")
+                  setIconSize(parseInt(iconApp))
+                  Alert.alert("Lưu thành công size icon", )
+                  
+                  setIconApp()
+                })
+                .catch((e) => {
+                  //console.log("Thất bại lưu", e)
+                  Alert.alert("Lưu thất bại size icon", )
+                });
+            }}
+            title={"Set icon app"}
+            color={"#2e89ff"}
+          >
+            Set size icon app
           </Button>
         </View>
         <View style={{ marginBottom: 18 }}>
@@ -529,6 +570,12 @@ const AddList = () => {
           value={linkApp}
           onChangeText={(text) => setLinkApp(text)}
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Download"
+          value={download}
+          onChangeText={(text) => setDownload(text)}
+        />
         <TouchableOpacity style={styles.addButton} onPress={handleAddData}>
           <Text style={styles.buttonText}>Thêm</Text>
         </TouchableOpacity>
@@ -595,6 +642,12 @@ const AddList = () => {
               placeholder="Link app"
               value={linkApp}
               onChangeText={(text) => setLinkApp(text)}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Số lượt tải xuống"
+              value={download}
+              onChangeText={(text) => setDownload(text)}
             />
             <TouchableOpacity
               style={styles.editModalButton}

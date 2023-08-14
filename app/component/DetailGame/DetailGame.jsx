@@ -141,7 +141,7 @@ const DetailGame = () => {
     "https://play-lh.googleusercontent.com/K4dUMb_Ww4K3QawGYxJCxtnN003UHeJAVyqMp1D1oM_Cvdoe-_MrqIYP-Sh1CWzoWuc=w526-h296",
     "https://play-lh.googleusercontent.com/J1bqN1ObHr5YGKK9Na--FyuQl0Jcme1ysHYRV8M_lht6HFtdAmUaZSxf_YUuev8KHBU=w526-h296"
   ])
-  const { setData, data } = useContext(AppContext);
+  const { setData, data, iconSize } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
@@ -224,6 +224,21 @@ const DetailGame = () => {
       
     }, randomNumbers);
   };
+  const newLocal = <View
+    style={{
+      flex: 1,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Text
+      style={{ fontWeight: "600", marginBottom: 8, opacity: 1, position: "relative" }}
+    >
+      <MaterialCommunityIcons name={"download-box-outline"} size={14} />
+    </Text>
+    <Text>{gameData?.storage}</Text>
+  </View>;
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView>
@@ -354,7 +369,14 @@ const DetailGame = () => {
             )}
             {
               installing=== true &&
-              <Text style={{marginTop: 6, fontSize: 17, fontWeight: 600}}>{progress}% của {gameData?.storage}</Text>
+              <>
+
+                <Text style={{marginTop: 6, fontSize: 17, fontWeight: 600}}>{progress}% của {gameData?.storage}</Text>
+                <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 4}}>
+                  <MaterialCommunityIcons name={"shield-check"} size={10} color={"#01875f"} />
+                  <Text style={{marginLeft: 8}}>Play Protect đã xác minh</Text>
+                </View>
+              </>
             }
           </View>
         </View>
@@ -387,21 +409,7 @@ const DetailGame = () => {
           >
             |
           </Text>
-          <View
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{ fontWeight: "600", marginBottom: 8, opacity: 1, position: "relative" }}
-            >
-              <MaterialCommunityIcons name={"download-box-outline"} size={16} />
-            </Text>
-            <Text>{gameData?.storage}</Text>
-          </View>
+          {newLocal}
           <Text
             style={{ verticalAlign: "middle", marginLeft: 8, marginRight: 8 }}
           >
@@ -421,12 +429,12 @@ const DetailGame = () => {
               Không phù hợp với trẻ 12 tuổi
             </Text>
           </View>
-          <Text
+          {/* <Text
             style={{ verticalAlign: "middle", marginLeft: 8, marginRight: 8 }}
           >
             |
-          </Text>
-          <View
+          </Text> */}
+          {/* <View
             style={{
               flex: 1,
               display: "flex",
@@ -439,7 +447,7 @@ const DetailGame = () => {
             <Text numberOfLines={1} ellipsizeMode="tail">
               Tải xuống
             </Text>
-          </View>
+          </View> */}
         </View>
         <View
           style={{
@@ -488,6 +496,7 @@ const DetailGame = () => {
                     justifyContent: "center",
                     alignItems: "center",
                     width: "100%",
+                    
                     
                   }}
                 >
@@ -678,6 +687,8 @@ const styles = StyleSheet.create({
 });
 
 const ComponentGame = ({imgUrl, name, rating}) => {
+  const {iconSize}= useContext(AppContext)
+
   return (
     <View
       style={{

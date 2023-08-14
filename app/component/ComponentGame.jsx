@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Dimensions, Image, Text, View } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { AppContext } from "../../App";
 
 const ComponentGame = ({cover_picture, avatar, name, genre, rating, storage}) => {
+  const {iconSize}= useContext(AppContext)
+
   return (
     <View
       style={{
