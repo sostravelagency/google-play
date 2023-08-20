@@ -16,18 +16,18 @@ import ComponentSearch from "../Search/ComponentSearch";
 import ProgressCircle from "react-native-progress-circle";
 import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Dimensions } from "react-native";
 function generateRandomNumbers(min, max, step) {
   var num = Math.floor((max - min) / step) + 1;
   var randomIndex = Math.floor(Math.random() * num);
-  var randomNumber = min + (randomIndex * step);
-  
+  var randomNumber = min + randomIndex * step;
+
   return randomNumber;
 }
 function getRandomString() {
   var randomNum = Math.random(); // Tạo một số ngẫu nhiên từ 0 đến 1
-  
+
   if (randomNum < 0.5) {
     return "Hơn 5N";
   } else if (randomNum < 0.8) {
@@ -48,7 +48,8 @@ function randomObjectsFromArray(arr) {
   }
 
   // Tạo một mảng ngẫu nhiên với số lượng đối tượng từ minObjects đến maxObjects
-  const numObjects = Math.floor(Math.random() * (maxObjects - minObjects + 1)) + minObjects;
+  const numObjects =
+    Math.floor(Math.random() * (maxObjects - minObjects + 1)) + minObjects;
 
   // Lặp qua mảng đã cho và lấy ngẫu nhiên các đối tượng
   for (let i = 0; i < numObjects; i++) {
@@ -61,11 +62,17 @@ const DetailGame = () => {
   const renderItem = (data) => {
     return data?.map((item, key) => <ComponentSearch key={key} {...item} />);
   };
-  const renderItem2= (data)=> {
-    return data?.map((item, key) => <ComponentGame key={key} imgUrl={item.imgUrl} name={item.name} rating={item.rating} />);
-    
-  }
-  const [dataRandomGame, setDataRandomGame]= useState([])
+  const renderItem2 = (data) => {
+    return data?.map((item, key) => (
+      <ComponentGame
+        key={key}
+        imgUrl={item.imgUrl}
+        name={item.name}
+        rating={item.rating}
+      />
+    ));
+  };
+  const [dataRandomGame, setDataRandomGame] = useState([]);
   const [data1, setData1] = useState(() => [
     {
       cover_picture:
@@ -134,13 +141,13 @@ const DetailGame = () => {
       author: "Com2uS",
     },
   ]);
-  const [textDownload, setTextDownload]= useState("")
-  
-  const [iData, setIData]= useState([
+  const [textDownload, setTextDownload] = useState("");
+
+  const [iData, setIData] = useState([
     "https://play-lh.googleusercontent.com/Ar3iQ47jpDq34LApOQWPjPpw-RMPmqGyR0EAMai8Q8rgCyDAZ_q0RdfCbB9kJaUpyC4=w526-h296",
     "https://play-lh.googleusercontent.com/K4dUMb_Ww4K3QawGYxJCxtnN003UHeJAVyqMp1D1oM_Cvdoe-_MrqIYP-Sh1CWzoWuc=w526-h296",
-    "https://play-lh.googleusercontent.com/J1bqN1ObHr5YGKK9Na--FyuQl0Jcme1ysHYRV8M_lht6HFtdAmUaZSxf_YUuev8KHBU=w526-h296"
-  ])
+    "https://play-lh.googleusercontent.com/J1bqN1ObHr5YGKK9Na--FyuQl0Jcme1ysHYRV8M_lht6HFtdAmUaZSxf_YUuev8KHBU=w526-h296",
+  ]);
   const { setData, data, iconSize } = useContext(AppContext);
   const [progress, setProgress] = useState(0);
   const [installing, setInstalling] = useState(false);
@@ -148,6 +155,7 @@ const DetailGame = () => {
   const [random, setRandom] = useState(false);
   const navigation = useNavigation();
   const { gameData } = useRoute().params;
+  const [change, setChange] = useState(false);
   // useEffect(() => {
   //   if (gameData?.install === 1) {
   //     setInstalled(true);
@@ -155,22 +163,22 @@ const DetailGame = () => {
   //     setInstalled(false);
   //   }
   // }, [gameData]);
-  useEffect(()=> {
+  useEffect(() => {
     AsyncStorage.getItem("random_image")
-    .then(json=> {
-      if(json) {
-        setDataRandomGame(JSON.parse(json))
-      }
-      else {
-        setDataRandomGame([])
-      }
-    })
-    .catch(e=> console.log("Lỗi"))
-  }, [])
+      .then((json) => {
+        if (json) {
+          console.log(json);
+          setDataRandomGame(JSON.parse(json));
+        } else {
+          setDataRandomGame([]);
+        }
+      })
+      .catch((e) => console.log("Lỗi"));
+  }, []);
 
-  useEffect(()=> {
-    setTextDownload(getRandomString)
-  }, [])
+  useEffect(() => {
+    setTextDownload(getRandomString);
+  }, []);
 
   const showRandomElement = () => {
     const random = Math.random();
@@ -182,20 +190,19 @@ const DetailGame = () => {
     showRandomElement();
   }, []);
 
-  const installApp = () => {
+  const installApp = (check) => {
     const randomNumbers = generateRandomNumbers(100, 300, 1);
     let percent = 0;
     const intervalId = setInterval(() => {
-      const r= generateRandomNumbers(1, 3, 1)
+      const r = generateRandomNumbers(1, 3, 1);
       percent += r;
-      if(percent >= 100) {
-        setProgress(100)
-      }
-      else {
+      if (percent >= 100) {
+        setProgress(100);
+      } else {
         setProgress((prev) => parseInt(prev) + r);
       }
       if (percent >= 100) {
-        percent= 100
+        percent = 100;
       }
       if (percent === 100) {
         setData(
@@ -221,24 +228,33 @@ const DetailGame = () => {
         setProgress(0);
         clearInterval(intervalId);
       }
-      
     }, randomNumbers);
+    if (check === true) {
+      clearInterval(intervalId);
+    }
   };
-  const newLocal = <View
-    style={{
-      flex: 1,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <Text
-      style={{ fontWeight: "600", marginBottom: 8, opacity: 1, position: "relative" }}
+  const newLocal = (
+    <View
+      style={{
+        flex: 1,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
-      <MaterialCommunityIcons name={"download-box-outline"} size={14} />
-    </Text>
-    <Text>{gameData?.storage}</Text>
-  </View>;
+      <Text
+        style={{
+          fontWeight: "600",
+          marginBottom: 8,
+          opacity: 1,
+          position: "relative",
+        }}
+      >
+        <MaterialCommunityIcons name={"download-box-outline"} size={14} />
+      </Text>
+      <Text>{gameData?.storage}</Text>
+    </View>
+  );
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView>
@@ -367,17 +383,30 @@ const DetailGame = () => {
                 </Text>
               </View>
             )}
-            {
-              installing=== true &&
+            {installing === true && (
               <>
-
-                <Text style={{marginTop: 6, fontSize: 17, fontWeight: 600}}>{progress}% của {gameData?.storage}</Text>
-                <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 4}}>
-                  <MaterialCommunityIcons name={"shield-check"} size={10} color={"#01875f"} />
-                  <Text style={{marginLeft: 8}}>Play Protect đã xác minh</Text>
+                <Text style={{ marginTop: 6, fontSize: 17, fontWeight: 600 }}>
+                  {progress}% của {gameData?.storage}
+                </Text>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 4,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name={"shield-check"}
+                    size={10}
+                    color={"#01875f"}
+                  />
+                  <Text style={{ marginLeft: 8 }}>
+                    Play Protect đã xác minh
+                  </Text>
                 </View>
               </>
-            }
+            )}
           </View>
         </View>
         <View
@@ -398,11 +427,17 @@ const DetailGame = () => {
               alignItems: "center",
             }}
           >
-            <Text style={{  marginBottom: 8 }}>
+            <Text style={{ marginBottom: 8 }}>
               {gameData?.rating}
               <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
             </Text>
-            <Text numberOfLines={1} ellipsizeMode="tail" style={{textAlign: "center"}}>292 N bài đánh giá</Text>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ textAlign: "center" }}
+            >
+              292 N bài đánh giá
+            </Text>
           </View>
           <Text
             style={{ verticalAlign: "middle", marginLeft: 8, marginRight: 8 }}
@@ -423,8 +458,12 @@ const DetailGame = () => {
               alignItems: "center",
             }}
           >
-            
-            <Image source={{uri: "https://play-lh.googleusercontent.com/yQChfa9XKlaXMIYTk8w8QwChjT8_SH-_2d2SS-kesw0TLQK1nxtw54bDcoZ09freZJgKrtg4f__is-31Vg=w48-h16-rw"}} style={{width: 24, height: 17, marginBottom: 8}} />
+            <Image
+              source={{
+                uri: "https://play-lh.googleusercontent.com/yQChfa9XKlaXMIYTk8w8QwChjT8_SH-_2d2SS-kesw0TLQK1nxtw54bDcoZ09freZJgKrtg4f__is-31Vg=w48-h16-rw",
+              }}
+              style={{ width: 24, height: 17, marginBottom: 8 }}
+            />
             <Text numberOfLines={1} ellipsizeMode="tail">
               Không phù hợp với trẻ 12 tuổi
             </Text>
@@ -463,51 +502,53 @@ const DetailGame = () => {
               style={{
                 width: "100%",
                 borderRadius: 10,
-                display: "flex", 
+                display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 flexDirection: "row",
-                
               }}
             >
-              {
-                installing=== true && <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "#fff",
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  marginRight: 12,
-                  borderWidth: 1,
-                  borderStyle: "solid",
-                  borderColor: "#e7e7e7"
-                }}
-              >
-                <TouchableHighlight
-                  onPress={ () => {
-                    setInstalling(false);
-                    setInstalled(false);
-                    setProgress(0);
-                  }}
+              {installing === true && (
+                <View
                   style={{
-                    height: 48,
+                    flex: 1,
+                    backgroundColor: "#fff",
                     borderRadius: 10,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: "100%",
-                    
-                    
+                    overflow: "hidden",
+                    marginRight: 12,
+                    borderWidth: 1,
+                    borderStyle: "solid",
+                    borderColor: "#e7e7e7",
                   }}
                 >
-                  <Text
-                    style={{ fontSize: 14, fontWeight: "600", color: "#01875f" }}
+                  <TouchableHighlight
+                    onPress={() => {
+                      setInstalled(false);
+                      installApp(true);
+                      setProgress(0);
+                      setInstalling(false);
+                    }}
+                    style={{
+                      height: 48,
+                      borderRadius: 10,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
                   >
-                    Hủy
-                  </Text>
-                </TouchableHighlight>
-              </View>
-              }
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "600",
+                        color: "#01875f",
+                      }}
+                    >
+                      Hủy
+                    </Text>
+                  </TouchableHighlight>
+                </View>
+              )}
               <View
                 style={{
                   flex: 1,
@@ -537,7 +578,6 @@ const DetailGame = () => {
                   </Text>
                 </TouchableHighlight>
               </View>
-              
             </View>
           )}
 
@@ -546,14 +586,13 @@ const DetailGame = () => {
               style={{
                 width: "100%",
                 borderRadius: 10,
-                display: "flex", 
+                display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 flexDirection: "row",
-                
               }}
             >
-            <View
+              <View
                 style={{
                   flex: 1,
                   backgroundColor: "#555",
@@ -563,8 +602,8 @@ const DetailGame = () => {
                 }}
               >
                 <TouchableHighlight
-                  onPress={ () => {
-                    setInstalled(false)
+                  onPress={() => {
+                    setInstalled(false);
                   }}
                   style={{
                     height: 48,
@@ -588,7 +627,6 @@ const DetailGame = () => {
                   backgroundColor: "#01875f",
                   borderRadius: 10,
                   overflow: "hidden",
-                  
                 }}
               >
                 <TouchableHighlight
@@ -615,18 +653,86 @@ const DetailGame = () => {
                   </Text>
                 </TouchableHighlight>
               </View>
-              
             </View>
           )}
         </View>
-        <View style={{ width: "100%", marginBottom: 16, padding: 10 }}>
-          <ScrollView
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          >
-            {renderItem2(randomObjectsFromArray(dataRandomGame))}
-          </ScrollView>
-        </View>
+        {(installing === true || installed === true) && (
+          <>
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                paddingTop: 10,
+                paddingBottom: 10,
+                flexDirection: "row",
+                padding: 10,
+              }}
+            >
+              <View
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  paddingTop: 10,
+                  paddingBottom: 10,
+                  flexDirection: "row",
+                }}
+              >
+                <Text style={{ fontSize: 15 }}>Quảng cáo</Text>
+                <Text style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}>
+                  •
+                </Text>
+                <Text style={{ fontSize: 20, fontWeight: "600" }}>
+                  Được đề xuất cho bạn
+                </Text>
+              </View>
+            </View>
+            <View style={{ width: "100%", padding: 10 }}>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                {renderItem2(randomObjectsFromArray(dataRandomGame))}
+              </ScrollView>
+            </View>
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                paddingTop: 10,
+                paddingBottom: 10,
+                flexDirection: "row",
+                padding: 10,
+              }}
+            >
+              <View
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  paddingTop: 10,
+                  paddingBottom: 10,
+                  flexDirection: "row",
+                }}
+              >
+                <Text style={{ fontSize: 20, fontWeight: "600" }}>
+                  Có thể bạn cũng thích
+                </Text>
+              </View>
+            </View>
+            <View style={{ width: "100%", marginBottom: 16, padding: 10 }}>
+              <ScrollView
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              >
+                {renderItem2(randomObjectsFromArray(dataRandomGame))}
+              </ScrollView>
+            </View>
+          </>
+        )}
+
         <View
           style={{
             width: "100%",
@@ -686,8 +792,8 @@ const styles = StyleSheet.create({
   },
 });
 
-const ComponentGame = ({imgUrl, name, rating}) => {
-  const {iconSize}= useContext(AppContext)
+const ComponentGame = ({ imgUrl, name, rating }) => {
+  const { iconSize } = useContext(AppContext);
 
   return (
     <View
@@ -703,22 +809,25 @@ const ComponentGame = ({imgUrl, name, rating}) => {
           marginBottom: 10,
           aspectRatio: 1 / 1,
           borderRadius: 10,
-          objectFit: "contain"
+          objectFit: "contain",
         }}
         alt={""}
         source={{
           uri: imgUrl,
         }}
       />
-      <Text numberOfLines={2}
-              ellipsizeMode="tail" style={{color: "#000"}}>{name}</Text>
-              <Text>{rating}<Ionicons name="star" size={10} style={{ marginLeft: 2 }} /></Text>
+      <Text numberOfLines={2} ellipsizeMode="tail" style={{ color: "#000" }}>
+        {name}
+      </Text>
+      <Text>
+        {rating}
+        <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
+      </Text>
     </View>
   );
 };
 
-
-const ComponentGame2 = ({imgUrl}) => {
+const ComponentGame2 = ({ imgUrl }) => {
   return (
     <View
       style={{
@@ -733,7 +842,7 @@ const ComponentGame2 = ({imgUrl}) => {
           marginBottom: 10,
           aspectRatio: 1 / 3,
           borderRadius: 10,
-          objectFit: "contain"
+          objectFit: "contain",
         }}
         alt={""}
         source={{
@@ -743,6 +852,5 @@ const ComponentGame2 = ({imgUrl}) => {
     </View>
   );
 };
-
 
 export default DetailGame;

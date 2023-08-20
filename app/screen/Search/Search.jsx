@@ -9,14 +9,15 @@ import {
   TouchableHighlight,
   View,
   Dimensions,
-  Image
+  Image,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Navigation from "../../component/Search/Navigation";
 import ComponentSearch from "../../component/Search/ComponentSearch";
 import { AppContext } from "../../../App";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 function shuffle(array) {
   const shuffledArray = [...array];
@@ -84,8 +85,22 @@ const Search = () => {
   const [searchData, setSearchData] = useState(searchQuery);
   const [activeInput, setActiveInput] = useState(false);
   const { data } = useContext(AppContext);
-  const [adsData, setAdsData]= useState([])
+  const [adsData, setAdsData] = useState([]);
+  function shuffleArray(array) {
+    const shuffledArray = [...array]; // Tạo một bản sao của mảng ban đầu
 
+    for (let i = shuffledArray.length - 1; i > 0; i--) {
+      // Chọn một vị trí ngẫu nhiên trong mảng còn lại
+      const j = Math.floor(Math.random() * (i + 1));
+
+      // Hoán đổi phần tử tại vị trí i và j
+      const temp = shuffledArray[i];
+      shuffledArray[i] = shuffledArray[j];
+      shuffledArray[j] = temp;
+    }
+
+    return shuffledArray;
+  }
   const [dataSearch, setDataSearch] = useState(
     sortByProperty(data, "rating").reverse()
   );
@@ -95,28 +110,27 @@ const Search = () => {
       if (item.ads === true) {
         return (
           <>
-          <View
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              paddingBottom: 10,
-              flexDirection: "row",
-            }}
-          >
-            <Text style={{ fontSize: 15 }}>Quảng cáo</Text>
-            <Text style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}>
-              •
-            </Text>
-            <Text
-              onPress={() => AsyncStorage.clear()}
-              style={{ fontSize: 20, fontWeight: "600" }}
+            <View
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                paddingBottom: 10,
+                flexDirection: "row",
+              }}
             >
-              Được đề xuất cho bạn
-            </Text>
-
-          </View>
-          <View style={{ width: "100%"}}>
+              <Text style={{ fontSize: 15 }}>Quảng cáo</Text>
+              <Text style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}>
+                •
+              </Text>
+              <Text
+                onPress={() => AsyncStorage.clear()}
+                style={{ fontSize: 20, fontWeight: "600" }}
+              >
+                Được đề xuất cho bạn
+              </Text>
+            </View>
+            <View style={{ width: "100%" }}>
               <ScrollView
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
@@ -145,7 +159,6 @@ const Search = () => {
 
   useEffect(() => {
     if (filter == 1) {
-      
       setDataSearch(shuffle(data));
     } else {
       setDataSearch(sortByProperty(data, "rating").reverse());
@@ -156,18 +169,16 @@ const Search = () => {
     addRandomValue(setDataSearch, dataSearch);
   }, []);
 
-  useEffect(()=> {
-    AsyncStorage.getItem("ads_app")
-    .then(json=> {
-      if(json) {
-        setAdsData(JSON.parse(json))
+  useEffect(() => {
+    AsyncStorage.getItem("ads_app").then((json) => {
+      if (json) {
+        setAdsData(JSON.parse(json));
+      } else {
+        setAdsData([]);
       }
-      else {
-        setAdsData([])
-      }
-    })
-  }, [])
- 
+    });
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <>
@@ -254,7 +265,65 @@ const Search = () => {
           <View style={{ paddingLeft: 10, paddingBottom: 10, flex: 1 }}>
             <ScrollView>
               <View style={{ width: "100%", marginBottom: 8, marginTop: 8 }}>
-                {renderItem(dataSearch)}
+                <View style={{ width: "100%" }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "600",
+                      marginBottom: 12,
+                    }}
+                  >
+                    Các tìm kiếm có liên quan
+                  </Text>
+                  <ResultSearchRelated />
+                </View>
+                {renderItem(shuffleArray(data).slice(0, 4))}
+                {/* {renderItem(dataSearch)} */}
+                <>
+                  <View
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      paddingBottom: 10,
+                      flexDirection: "row",
+                    }}
+                  >
+                    <Text style={{ fontSize: 15 }}>Quảng cáo</Text>
+                    <Text
+                      style={{ fontSize: 18, marginLeft: 10, marginRight: 10 }}
+                    >
+                      •
+                    </Text>
+                    <Text
+                      onPress={() => AsyncStorage.clear()}
+                      style={{ fontSize: 20, fontWeight: "600" }}
+                    >
+                      Được đề xuất cho bạn
+                    </Text>
+                  </View>
+                  <View style={{ width: "100%" }}>
+                    <ScrollView
+                      horizontal={true}
+                      showsHorizontalScrollIndicator={false}
+                    >
+                      {renderItem2(adsData)}
+                    </ScrollView>
+                  </View>
+                </>
+                {renderItem(shuffleArray(data).slice(0, 1))}
+                <View style={{ width: "100%" }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "600",
+                      marginBottom: 12,
+                    }}
+                  >
+                    Sự kiện trong thời gian có hạn
+                  </Text>
+                  {renderItem(shuffleArray(data).slice(0, 5))}
+                </View>
               </View>
             </ScrollView>
           </View>
@@ -287,7 +356,7 @@ const styles = StyleSheet.create({
 export default Search;
 
 const ComponentGame = ({ imgUrl, name, rating, download }) => {
-  const {iconSize }= useContext(AppContext)
+  const { iconSize } = useContext(AppContext);
 
   return (
     <View
@@ -317,13 +386,65 @@ const ComponentGame = ({ imgUrl, name, rating, download }) => {
         {rating}
         <Ionicons name="star" size={10} style={{ marginLeft: 2 }} />
       </Text>
-      {
-        download && 
+      {download && (
         <Text>
-          <MaterialCommunityIcons name="download-box-outline" size={14} style={{ marginLeft: 2 }} />
+          <MaterialCommunityIcons
+            name="download-box-outline"
+            size={14}
+            style={{ marginLeft: 2 }}
+          />
           {download}
         </Text>
-      }
+      )}
     </View>
   );
+};
+
+const ResultSearchRelated = () => {
+  const { searchQuery: searchTerm } = useRoute().params;
+  const [dataSearchRelated, setDataSearchRelated] = useState([]);
+
+  useEffect(() => {
+    const currentYear = new Date().getFullYear() - 2;
+
+    const numberOfYears = 5;
+
+    const searchResults = [];
+
+    for (var i = 0; i < numberOfYears; i++) {
+      const year = currentYear + i;
+      const result = searchTerm + " " + year;
+      searchResults.push(result);
+    }
+    setDataSearchRelated(searchResults);
+  }, [searchTerm]);
+
+  const renderItem = (data) => {
+    return data.map((item, key) => (
+      <View
+        key={key}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "row",
+          paddingTop: 16,
+          paddingBottom: 16,
+        }}
+      >
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <MaterialIcons name="search" size={20} color={"#000"} />
+        </View>
+        <Text style={{ fontSize: 16, marginLeft: 16 }}>{item}</Text>
+      </View>
+    ));
+  };
+
+  return <View style={{ width: "100%" }}>{renderItem(dataSearchRelated)}</View>;
 };
